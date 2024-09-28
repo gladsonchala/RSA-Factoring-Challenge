@@ -1,43 +1,27 @@
 #!/usr/bin/env bash
-# is a factors challenge
 
 check_factor() {
-    if [ $# -ne 3 ]; then
-        args=("$@")
-        count=0
-        num2=1
-        for a in "${args[@]}"; do
-            if [ $count -gt 1 ]; then
-                num2=$(echo "$a*$num2" | bc)
-            fi
-            count=$((count + 1))
-        done
+    local num=$1
+    local factors=($(factor "$num"))  # Get all factors of the number
+
+    # Check if we have exactly two factors (excluding the original number itself)
+    if [ ${#factors[@]} -eq 3 ]; then
+        local p=${factors[1]}
+        local q=${factors[2]}
+        echo "$num=$p*$q"
     else
-        num2=$3
+        # If we don't get exactly two factors, print an error or handle accordingly
+        echo "$num cannot be factorized into exactly two primes."
     fi
-
-    num1=$2
-    num=$(echo "$1" | tr ':' '=')
-
-    result=$(echo "if($num2 > $num1) 1 else 0" | bc)
-    if ((result == 1)); then
-        # Swap if num2 is greater than num1
-        numcp=$num1
-        num1=$num2
-        num2=$numcp
-    fi
-
-    echo "$num$num1*$num2"
 }
 
-# Check if the number of arguments is correct
+# Check that we have exactly one argument (the file to read numbers from)
 if [ $# -ne 1 ]; then
-    echo 'Usage: factors <file>'
+    echo 'Usage: rsa <file>'
     exit 1
 else
-    # Read numbers from the file and factorize them
+    # Read each number from the file and factorize it
     while read -r i; do
-        result=$(factor "$i")
-        check_factor $result
+        check_factor "$i"
     done < "$1"
 fi
