@@ -1,22 +1,48 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#is a challenge
+check_factor()
+{
+	if [ $# -ne 3 ];
+        then
+                args=("$@")
+                count=0
+                num2=1
+                for a in ${args[*]};
+                do
+                        if [ $count -gt 1 ];
+                        then
+                                num2=$(echo $a*$num2 | bc)
+                        fi
+                        count=$((count + 1))
+                done
+        else
+                num2=$3
+        fi
 
-# Usage function
-usage() {
-        echo "Usage: $0 <file>"
-        echo "  <file>  File containing positive integers (one per line)"
+        num1=$2
+        num=$(echo "$1" | tr ':' '=')
+
+        result=$(echo "if($num2 > $num1) 1 else 0" | bc)
+	        if ((result == 1)); then
+		        numcp=$num1
+		        num1=$num2
+		        num2=$numcp
+                fi
+
+        echo "$num$num1*$num2"
 }
 
-# Check if file parameter is provided and exists
-if [ -z "$1" ] || [ ! -f "$1" ]; then
-        usage
+if [ $# -ne 1 ]
+then
+        echo 'Usage: rsa <file>'
         exit 1
-fi
+else
 
-# Read the file line by line
-filename="$1"
-while IFS= read -r number; do
-        result=$(factor "$number")
-        second_num=$(echo $result | tr ":" "=" | cut -d " " -f 2 | tr -d " ")
-        third_num=$(expr $number / $second_num)
-        echo "$number=$third_num*$second_num"
-done < "$filename"
+        while read i
+        do
+
+                result=$(factor "$i")
+                check_factor $result
+
+        done < "$1"
+fi
